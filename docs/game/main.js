@@ -1,4 +1,4 @@
-title = "Number Cruncher";
+title = "Morse Encoder!";
 
 description = `
 [Tap] Zero
@@ -23,6 +23,46 @@ const questionTime = 600;
 const maxTime = 2000;
 const holdTime = 10;
 
+// Morse Code dictionary:
+const morse = {
+	'.-':		'a',
+	'-...':		'b',
+	'-.-.':		'c',
+	'-..':		'd',
+	'.':		'e',
+	'..-.':		'f',
+	'--.':		'g',
+	'....':		'h',
+	'..':		'i',
+	'.---':		'j',
+	'-.-':		'k',
+	'.-..':		'l',
+	'--':		'm',
+	'-.':		'n',
+	'---':		'o',
+	'.--.':		'p',
+	'--.-':		'q',
+	'.-.':		'r',
+	'...':		's',
+	'-':		't',
+	'..-':		'u',
+	'...-':		'v',
+	'.--':		'w',
+	'-..-':		'x',
+	'-.--':		'y',
+	'--..':		'z',
+	'.----':	'1',
+	'..---':	'2',
+	'...--':	'3',
+	'....-':	'4',
+	'.....':	'5',
+	'-....':	'6',
+	'--...':	'7',
+	'---..':	'8',
+	'----.':	'9',
+	'-----':	'0',
+};
+
 // variables
 let isPressing;		// checking if button is held
 let held; 			// counts how long button is held, to differentiate dots and dashes
@@ -32,13 +72,14 @@ let answer; 		// player input
 let correctAnswer;	// what input should match
 let binaryTxt;		// display text in binary
 let b10Txt;			// display text in base 10
+let paused;			// has a pause been registered yet
 
 // difficulty = digits
 function binaryArrayToStr(arr) { // function for printing arrays without commas
 	let s = "";
 	for (let i = 0; i < arr.length; i++) {
 		s = s.concat(String(arr[i]));
-		s = s.concat(" ");
+		//s = s.concat(" ");
 	}
 	return s;
 }
@@ -76,8 +117,10 @@ function update() {
 		console.log(binaryTxt);
 		console.log(correctAnswer);
 		nextQ = false;
+		paused = true;
 	}
 
+	// Visuals
 	color("red");
 	line(vec(0, 10), vec(timeout*100/questionTime, 10)); // timeout bar
 	text(String(floor(timeout*10/60)/10), vec(G.WIDTH/2-15, 4)); // timeout number
@@ -113,27 +156,32 @@ function update() {
 		held = 0;
 	}
 	held += 1;
-	/*if (!isPressing && held > holdTime) {
+	if (!paused && !isPressing && !input.isJustReleased && held > holdTime*5) {
 		// third kind of input: pause between inputs (ie for breaks btwn morse letters)
 		// note that you'll have to make a variable that makes sure it only registers the pause once
-	}*/
+		answer.push("/");
+		paused = true;
+	}
 	if (input.isJustReleased) {
 		isPressing = false;
 		if(input.pos.y > G.HEIGHT*3/4) { // cancel input
 			console.log("canceled");
 			answer = [];
+			paused = true;
 		} else {
 			if (held > holdTime) { //held
 				console.log("held");
 				console.log(held);
 				play("laser");
-				answer.push(1);
+				answer.push("-");
 			} else { //tapped
 				play("select");
 				console.log("tapped");
 				console.log(held);
-				answer.push(0);
+				answer.push(".");
 			}
+			held = 0;
+			paused = false;
 		}
 		console.log(answer);
 	}
