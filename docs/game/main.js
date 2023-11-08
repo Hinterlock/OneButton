@@ -94,8 +94,17 @@ function update() {
 	line(vec(0, G.HEIGHT*3/4), vec(G.WIDTH, G.HEIGHT*3/4)); // separator line for cancel area
 	text("Cancel", vec(G.WIDTH/2-16, G.HEIGHT*7/8)); // cancel text
 
-	if(held > holdTime && isPressing) { // indicator that youve held long enough
-		box(vec(input.pos), 10);
+	if(isPressing) { // indicator that youve held long enough
+		if (held > holdTime) {
+			color("red");
+			//box(vec(input.pos), 10);
+			//arc(input.pos.x, input.pos.y, 6, 3);
+			bar(input.pos.x, input.pos.y, 10, 3, Math.PI/2);
+		} else {
+			color("cyan");
+			//box(vec(input.pos), 10);
+			arc(input.pos.x, input.pos.y, 6, 3);
+		}
 	}
 
 	// Input Handling
@@ -144,6 +153,7 @@ function update() {
 			score += timeout/100;
 		} else {
 			play("explosion");
+			console.log("YUH OH!");
 		}
 		// empty answer
 		answer = [];
