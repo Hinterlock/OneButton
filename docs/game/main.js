@@ -1,8 +1,9 @@
 title = "Morse Encoder!";
 
 description = `
-[Tap] Zero
-[Hold] One
+[Tap]  Dot
+[Hold] Dash
+[Wait] Pause
 `;
 
 characters = []; // for sprites (none atm)
@@ -24,7 +25,7 @@ const maxTime = 2000;
 const holdTime = 10;
 
 // Morse Code dictionary:
-const morse = {
+const morseToABC = {
 	'.-':		'a',
 	'-...':		'b',
 	'-.-.':		'c',
@@ -51,7 +52,7 @@ const morse = {
 	'-..-':		'x',
 	'-.--':		'y',
 	'--..':		'z',
-	'.----':	'1',
+/*	'.----':	'1',
 	'..---':	'2',
 	'...--':	'3',
 	'....-':	'4',
@@ -60,8 +61,9 @@ const morse = {
 	'--...':	'7',
 	'---..':	'8',
 	'----.':	'9',
-	'-----':	'0',
+	'-----':	'0',*/
 };
+let ABCToMorse;
 
 // variables
 let isPressing;		// checking if button is held
@@ -73,6 +75,7 @@ let correctAnswer;	// what input should match
 let binaryTxt;		// display text in binary
 let b10Txt;			// display text in base 10
 let paused;			// has a pause been registered yet
+let morseKeys;
 
 // difficulty = digits
 function binaryArrayToStr(arr) { // function for printing arrays without commas
@@ -83,15 +86,19 @@ function binaryArrayToStr(arr) { // function for printing arrays without commas
 	}
 	return s;
 }
-function Generator(digits){ // generates a number and saves it in str form to binaryTxt as binary and b10Txt as base 10
-	let resD = 0;
+function Generator(){ // generates a number and saves it in str form to binaryTxt as binary and b10Txt as base 10
+	let resD = "";
+	correctAnswer = "";
+	let digits = Math.ceil(Math.random()*2);
 	for(let x in range(digits)){
-		correctAnswer[parseInt(x)] = floor(Math.random()*2);
-		resD += correctAnswer[parseInt(x)] * Math.pow(2, digits - parseInt(x) - 1);
+		let elem = morseKeys[Math.floor(Math.random()*morseKeys.length)];
+		correctAnswer = correctAnswer.concat(elem);
+		correctAnswer = correctAnswer.concat('/');
+		resD = resD.concat(morseToABC[elem]);
 	}
 	//txt = String(resD);
-	binaryTxt = binaryArrayToStr(correctAnswer);
-	b10Txt = String(resD);
+	binaryTxt = correctAnswer;
+	b10Txt = resD;
 }
 
 function update() {
@@ -101,8 +108,10 @@ function update() {
 		nextQ = true;
 		timeout = 0;
 		answer = [];
-		correctAnswer = [];
+		//correctAnswer = [];
 		binaryTxt = "testing";
+		morseKeys = Object.keys(morseToABC);
+		return;
 	}
 	// Gen prompt
 	if (nextQ) {
@@ -112,7 +121,7 @@ function update() {
 		}*/
 		timeout = questionTime;
 		// ask question
-		Generator(5);
+		Generator();
 		console.log(b10Txt);
 		console.log(binaryTxt);
 		console.log(correctAnswer);
@@ -163,6 +172,7 @@ function update() {
 		// third kind of input: pause between inputs (ie for breaks btwn morse letters)
 		// note that you'll have to make a variable that makes sure it only registers the pause once
 		answer.push("/");
+		console.log(answer);
 		paused = true;
 	}
 	if (input.isJustReleased) {
@@ -189,7 +199,7 @@ function update() {
 		console.log(answer);
 	}
 
-	if (answer.length == 5) { // Check if answer correct
+	if (answer.length == correctAnswer.length) { // Check if answer correct
 		let correct = true;
 		// compare to correct answer
 		for (let i = 0; i < answer.length; i++) {
