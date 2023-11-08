@@ -142,12 +142,15 @@ function update() {
 			color("red");
 			//box(vec(input.pos), 10);
 			//arc(input.pos.x, input.pos.y, 6, 3);
-			bar(input.pos.x, input.pos.y, 10, 3, Math.PI/2);
+			bar(input.pos.x, input.pos.y, 10, 3, 0);
 		} else {
 			color("cyan");
 			//box(vec(input.pos), 10);
-			arc(input.pos.x, input.pos.y, 6, 3);
+			arc(input.pos.x, input.pos.y, 1, 3);
 		}
+	} else if (!paused) {
+		color("yellow");
+		bar(input.pos.x, input.pos.y, 10, 3, -Math.PI/4);
 	}
 
 	// Input Handling
