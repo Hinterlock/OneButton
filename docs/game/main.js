@@ -147,15 +147,21 @@ function update() {
 	text("Cancel", vec(G.WIDTH/2-16, G.HEIGHT*7/8)); // cancel text
 
 	if(isPressing) { // indicator that youve held long enough
-		if (held > holdTime) {
-			color("red");
-			//box(vec(input.pos), 10);
-			//arc(input.pos.x, input.pos.y, 6, 3);
-			bar(input.pos.x, input.pos.y, 10, 3, 0);
+		if(input.pos.y > G.HEIGHT*3/4) {
+			color("light_red");
+			bar(input.pos.x, input.pos.y, 14, 3, Math.PI/4);
+			bar(input.pos.x, input.pos.y, 14, 3, -Math.PI/4);
 		} else {
-			color("cyan");
-			//box(vec(input.pos), 10);
-			arc(input.pos.x, input.pos.y, 1, 3);
+			if (held > holdTime) {
+				color("red");
+				//box(vec(input.pos), 10);
+				//arc(input.pos.x, input.pos.y, 6, 3);
+				bar(input.pos.x, input.pos.y, 10, 3, 0);
+			} else {
+				color("cyan");
+				//box(vec(input.pos), 10);
+				arc(input.pos.x, input.pos.y, 1, 3);
+			}
 		}
 	} else if (!paused) {
 		color("yellow");
@@ -168,7 +174,7 @@ function update() {
 		held = 0;
 	}
 	held += 1;
-	if (!paused && !isPressing && !input.isJustReleased && held > holdTime*5) {
+	if (!paused && !isPressing && !input.isJustReleased && held > holdTime*3) {
 		// third kind of input: pause between inputs (ie for breaks btwn morse letters)
 		// note that you'll have to make a variable that makes sure it only registers the pause once
 		answer.push("/");
@@ -179,6 +185,7 @@ function update() {
 		isPressing = false;
 		if(input.pos.y > G.HEIGHT*3/4) { // cancel input
 			console.log("canceled");
+			play("coin");
 			answer = [];
 			paused = true;
 		} else {
@@ -215,6 +222,7 @@ function update() {
 		} else {
 			play("explosion");
 			console.log("YUH OH!");
+			paused = true;
 		}
 		// empty answer
 		answer = [];
