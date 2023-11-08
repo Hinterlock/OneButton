@@ -1,4 +1,4 @@
-title = "Number Cruncher";
+title = "Morse Encoder!";
 
 description = `
 `;
@@ -7,7 +7,7 @@ characters = [];
 
 const G = {
 	WIDTH: 100,
-	HEIGHT: 150
+	HEIGHT: 100
 };
 
 options = {
@@ -15,33 +15,17 @@ options = {
 	isPlayingBgm: true,
 };
 
-/** 
- * @typedef {{
- * pos: Vector,
- * speed: number
- * }} Star ):
- */
+// constants
+const questionTime = 1000;
 
-/**
- * @type { Star [] }
-*/
-let stars;
-
-
-
-
-
-let isPressing;
-let held;
-let nextQ;
-let timeout;
-let answer;
-let correctAnswer;
-let txt;
-let test;
-
-
-//From the moment I understood the weakness of the flesh, it disgusted me https://www.youtube.com/watch?v=9gIMZ0WyY88
+// variables
+let isPressing;		// checking if button is held
+let held; 			// counts how long button is held, to differentiate dots and dashes
+let nextQ;			// check to ask next question
+let timeout;		// keeping track of time till timeout into next question
+let answer; 		// player input
+let correctAnswer;	// what input should match
+let txt;			// display text
 
 // difficulty = digits
 function Generator(digits){
@@ -50,23 +34,11 @@ function Generator(digits){
 		correctAnswer[parseInt(x)] = floor(Math.random()*2);
 		resD += correctAnswer[parseInt(x)] * Math.pow(2, digits - parseInt(x) - 1);
 	}
-	return resD;
-} 
-
-function altGen(){
-	let max = 32;
-	let answer = Math.random() * max;
-
-	let result = (answer >>> 0).toString(2);
-
-//	result = ;
-
-	return result;
+	txt = String(resD);
 }
 
 function update() {
-	if (!ticks) {
-		console.log("rat"); //me when, you when, me https://www.youtube.com/shorts/H63ZboU92c4
+	if (!ticks) { // Initialize variables
 		isPressing = false;
 		held = 0;
 		nextQ = true;
@@ -74,49 +46,42 @@ function update() {
 		answer = [];
 		correctAnswer = [];
 		txt = "testing";
-		test = "saa";
 	}
 	// Gen prompt
 	if (nextQ) {
-		timeout = 600;
+		timeout = questionTime;
 		// ask question
-		//txt = String(Generator(5));
-		txt = String(Generator(5));
+		Generator(5);
 		console.log(txt);
 		console.log(correctAnswer);
-		//correctAnswer = [1, 0, 1, 0, 1];
 		nextQ = false;
 	}
-	box(vec(timeout*100/600, 10), 2);
-	text(String(floor(timeout*10/60)/10), vec(50-5, 2));
-	text(txt, vec(45, 15));
-	text(String(answer), vec(45, 22));
-	line(vec(0, G.HEIGHT/2), vec(G.WIDTH, G.HEIGHT/2));
-	text("Cancel", vec(G.WIDTH/2, G.HEIGHT*3/4));
-	if(held > 10)
-	{
+	
+	box(vec(timeout*100/questionTime, 10), 2); // timeout bar
+	text(String(floor(timeout*10/60)/10), vec(50-5, 2)); // timeout number
+
+	text(txt, vec(G.WIDTH/4, 15)); // question
+	text(String(answer), vec(G.WIDTH/4, 22)); // input so far
+
+	line(vec(0, G.HEIGHT*3/4), vec(G.WIDTH, G.HEIGHT*3/4)); // separator line for cancel area
+	text("Cancel", vec(G.WIDTH/4, G.HEIGHT*7/8)); // cancel text
+
+	if(held > 10 && isPressing) { // indicator that youve held long enough
 		box(vec(input.pos), 2);
 	}
-
-
-
 
 	// Input Handling
 	if (input.isJustPressed) {
 		isPressing = true;
 		held = 0;
 	}
-	if (isPressing) {
-		held += 1;
-	}
+	held += 1;
 	if (input.isJustReleased) {
 		isPressing = false;
-		if(input.pos.y > G.HEIGHT/2)
-		{
+		if(input.pos.y > G.HEIGHT*3/4) { // cancel input
 			console.log("canceled");
-		}
-		else
-		{
+			answer = [];
+		} else {
 			if (held > 10) { //held
 				console.log("held");
 				console.log(held);
@@ -129,7 +94,6 @@ function update() {
 				answer.push(0);
 			}
 		}
-		held = 0;
 		console.log(answer);
 	}
 
@@ -149,12 +113,10 @@ function update() {
 		// empty answer
 		answer = [];
 	}
-	// Check if prompt timed out
-	if (timeout <= 0) {
+	if (timeout <= 0) { // Check if prompt timed out
 		nextQ = true;
 		answer = [];
 	} else {
 		timeout -= 1;
 	}
-
 }
