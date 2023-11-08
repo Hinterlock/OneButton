@@ -1,7 +1,7 @@
 title = "Number Cruncher";
 
 description = `
-[Tap] Zero
+[Tap]  Zero
 [Hold] One
 `;
 
@@ -95,15 +95,21 @@ function update() {
 	text("Cancel", vec(G.WIDTH/2-16, G.HEIGHT*7/8)); // cancel text
 
 	if(isPressing) { // indicator that youve held long enough
-		if (held > holdTime) {
-			color("red");
-			//box(vec(input.pos), 10);
-			//arc(input.pos.x, input.pos.y, 6, 3);
-			bar(input.pos.x, input.pos.y, 10, 3, Math.PI/2);
+		if(input.pos.y > G.HEIGHT*3/4) {
+			color("light_red");
+			bar(input.pos.x, input.pos.y, 14, 3, Math.PI/4);
+			bar(input.pos.x, input.pos.y, 14, 3, -Math.PI/4);
 		} else {
-			color("cyan");
-			//box(vec(input.pos), 10);
-			arc(input.pos.x, input.pos.y, 6, 3);
+			if (held > holdTime) {
+				color("yellow");
+				//box(vec(input.pos), 10);
+				//arc(input.pos.x, input.pos.y, 6, 3);
+				bar(input.pos.x, input.pos.y, 10, 3, Math.PI/2);
+			} else {
+				color("cyan");
+				//box(vec(input.pos), 10);
+				arc(input.pos.x, input.pos.y, 6, 3);
+			}
 		}
 	}
 
@@ -121,6 +127,7 @@ function update() {
 		isPressing = false;
 		if(input.pos.y > G.HEIGHT*3/4) { // cancel input
 			console.log("canceled");
+			play("coin");
 			answer = [];
 		} else {
 			if (held > holdTime) { //held
@@ -149,7 +156,7 @@ function update() {
 		if (correct) {
 			nextQ = true;
 			console.log("YIPPEEE!");
-			play("lucky");
+			play("powerUp");
 			score += timeout/100;
 		} else {
 			play("explosion");
