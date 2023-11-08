@@ -1,126 +1,132 @@
 title = "Number Cruncher";
 
 description = `
+[Tap] Zero
+[Hold] One
 `;
 
-characters = [];
+characters = []; // for sprites (none atm)
 
 const G = {
 	WIDTH: 100,
-	HEIGHT: 150
+	HEIGHT: 100
 };
 
 options = {
 	viewSize: {x: G.WIDTH, y: G.HEIGHT},
 	isPlayingBgm: true,
+	theme: "crt"
 };
 
-/** 
- * @typedef {{
- * pos: Vector,
- * speed: number
- * }} Star ):
- */
+// constants
+const questionTime = 600;
+const maxTime = 2000;
+const holdTime = 10;
 
-/**
- * @type { Star [] }
-*/
-let stars;
-
-
-
-
-
-let isPressing;
-let held;
-let nextQ;
-let timeout;
-let answer;
-let correctAnswer;
-let txt;
-let test;
-
-
-//From the moment I understood the weakness of the flesh, it disgusted me https://www.youtube.com/watch?v=9gIMZ0WyY88
+// variables
+let isPressing;		// checking if button is held
+let held; 			// counts how long button is held, to differentiate dots and dashes
+let nextQ;			// check to ask next question
+let timeout;		// keeping track of time till timeout into next question
+let answer; 		// player input
+let correctAnswer;	// what input should match
+let binaryTxt;		// display text in binary
+let b10Txt;			// display text in base 10
 
 // difficulty = digits
-function Generator(digits){
+function binaryArrayToStr(arr) { // function for printing arrays without commas
+	let s = "";
+	for (let i = 0; i < arr.length; i++) {
+		s = s.concat(String(arr[i]));
+		s = s.concat(" ");
+	}
+	return s;
+}
+function Generator(digits){ // generates a number and saves it in str form to binaryTxt as binary and b10Txt as base 10
 	let resD = 0;
 	for(let x in range(digits)){
 		correctAnswer[parseInt(x)] = floor(Math.random()*2);
 		resD += correctAnswer[parseInt(x)] * Math.pow(2, digits - parseInt(x) - 1);
 	}
-	return resD;
-} 
-
-function altGen(){
-	let max = 32;
-	let answer = Math.random() * max;
-
-	let result = (answer >>> 0).toString(2);
-
-//	result = ;
-
-	return result;
+	//txt = String(resD);
+	binaryTxt = binaryArrayToStr(correctAnswer);
+	b10Txt = String(resD);
 }
 
 function update() {
-	if (!ticks) {
-		console.log("rat"); //me when, you when, me https://www.youtube.com/shorts/H63ZboU92c4
+	if (!ticks) { // Initialize variables
 		isPressing = false;
 		held = 0;
 		nextQ = true;
 		timeout = 0;
 		answer = [];
 		correctAnswer = [];
-		txt = "testing";
-		test = "saa";
+		binaryTxt = "testing";
 	}
 	// Gen prompt
 	if (nextQ) {
-		timeout = 600;
+		/*timeout += questionTime; // if you want question time to carry over
+		if (timeout > maxTime) {
+			timeout = maxTime;
+		}*/
+		timeout = questionTime;
 		// ask question
-		//txt = String(Generator(5));
-		txt = String(Generator(5));
-		console.log(txt);
+		Generator(5);
+		console.log(b10Txt);
+		console.log(binaryTxt);
 		console.log(correctAnswer);
-		//correctAnswer = [1, 0, 1, 0, 1];
 		nextQ = false;
 	}
-	box(vec(timeout*100/600, 10), 2);
-	text(String(floor(timeout*10/60)/10), vec(50-5, 2));
-	text(txt, vec(45, 15));
-	text(String(answer), vec(45, 22));
-	line(vec(0, G.HEIGHT/2), vec(G.WIDTH, G.HEIGHT/2));
-	text("Cancel", vec(G.WIDTH/2, G.HEIGHT*3/4));
-	if(held > 10)
-	{
-		box(vec(input.pos), 2);
+
+	color("red");
+	line(vec(0, 10), vec(timeout*100/questionTime, 10)); // timeout bar
+	text(String(floor(timeout*10/60)/10), vec(G.WIDTH/2-15, 4)); // timeout number
+
+	color("black");
+	text(b10Txt, vec(5, G.HEIGHT/4)); // question
+	color("light_black");
+	text(":", vec(15, G.HEIGHT/4));
+	color("black");
+	text(binaryTxt, vec(G.WIDTH/4, G.HEIGHT/4));
+	text(binaryArrayToStr(answer), vec(G.WIDTH/4, G.HEIGHT/2 + 10)); // input so far
+
+	color("red");
+	line(vec(0, G.HEIGHT*3/4), vec(G.WIDTH, G.HEIGHT*3/4)); // separator line for cancel area
+	text("Cancel", vec(G.WIDTH/2-16, G.HEIGHT*7/8)); // cancel text
+
+	if(isPressing) { // indicator that youve held long enough
+		if (held > holdTime) {
+			color("red");
+			//box(vec(input.pos), 10);
+			//arc(input.pos.x, input.pos.y, 6, 3);
+			bar(input.pos.x, input.pos.y, 10, 3, Math.PI/2);
+		} else {
+			color("cyan");
+			//box(vec(input.pos), 10);
+			arc(input.pos.x, input.pos.y, 6, 3);
+		}
 	}
-
-
-
 
 	// Input Handling
 	if (input.isJustPressed) {
 		isPressing = true;
 		held = 0;
 	}
-	if (isPressing) {
-		held += 1;
-	}
+	held += 1;
+	/*if (!isPressing && held > holdTime) {
+		// third kind of input: pause between inputs (ie for breaks btwn morse letters)
+		// note that you'll have to make a variable that makes sure it only registers the pause once
+	}*/
 	if (input.isJustReleased) {
 		isPressing = false;
-		if(input.pos.y > G.HEIGHT/2)
-		{
+		if(input.pos.y > G.HEIGHT*3/4) { // cancel input
 			console.log("canceled");
-		}
-		else
-		{
-			if (held > 10) { //held
+			answer = [];
+		} else {
+			if (held > holdTime) { //held
 				console.log("held");
 				console.log(held);
-				play("lucky");
+				play("laser");
 				answer.push(1);
 			} else { //tapped
 				play("select");
@@ -129,7 +135,6 @@ function update() {
 				answer.push(0);
 			}
 		}
-		held = 0;
 		console.log(answer);
 	}
 
@@ -144,17 +149,20 @@ function update() {
 		if (correct) {
 			nextQ = true;
 			console.log("YIPPEEE!");
-			score += 1;
+			play("lucky");
+			score += timeout/100;
+		} else {
+			play("explosion");
+			console.log("YUH OH!");
 		}
 		// empty answer
 		answer = [];
 	}
-	// Check if prompt timed out
-	if (timeout <= 0) {
-		nextQ = true;
-		answer = [];
+	if (timeout <= 0) { // Check if prompt timed out
+		end();
+		//nextQ = true;
+		//answer = [];
 	} else {
 		timeout -= 1;
 	}
-
 }
