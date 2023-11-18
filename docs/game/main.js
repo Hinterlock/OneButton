@@ -1,4 +1,4 @@
-title = "Number Cruncher";
+title = "Base Blaster";
 
 description = `
 [Tap]  Zero
