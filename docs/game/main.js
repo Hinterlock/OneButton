@@ -2,7 +2,7 @@ title = "Number Cruncher";
 
 description = `
 [Tap]  Zero
-[Hold] One
+[Hold] More
 `;
 
 characters = []; // for sprites (none atm)
@@ -15,15 +15,18 @@ const G = {
 options = {
 	viewSize: {x: G.WIDTH, y: G.HEIGHT},
 	isPlayingBgm: true,
-	theme: "crt"
+	theme: "dark",
+	seed: 8
 };
 
 // constants
-const questionTime = 600;
 const maxTime = 2000;
-const holdTime = 10;
+const holdTime = 15;
+const LvlTime = 1500;
+const maxQTime = 1000;
 
 // variables
+let digit = 0; 		// the digit to be added to the array
 let isPressing;		// checking if button is held
 let held; 			// counts how long button is held, to differentiate dots and dashes
 let nextQ;			// check to ask next question
@@ -32,6 +35,10 @@ let answer; 		// player input
 let correctAnswer;	// what input should match
 let binaryTxt;		// display text in binary
 let b10Txt;			// display text in base 10
+let timeoutL = 0; 	// time until next level
+let base = 1;		// base of the problems
+let questionTime = 300;	// base time to answer questions
+let lvlUpQadd = 300;	// added time to answer questions
 
 // difficulty = digits
 function binaryArrayToStr(arr) { // function for printing arrays without commas
@@ -45,8 +52,8 @@ function binaryArrayToStr(arr) { // function for printing arrays without commas
 function Generator(digits){ // generates a number and saves it in str form to binaryTxt as binary and b10Txt as base 10
 	let resD = 0;
 	for(let x in range(digits)){
-		correctAnswer[parseInt(x)] = floor(Math.random()*2);
-		resD += correctAnswer[parseInt(x)] * Math.pow(2, digits - parseInt(x) - 1);
+		correctAnswer[parseInt(x)] = floor(Math.random()*base);
+		resD += correctAnswer[parseInt(x)] * Math.pow(base, digits - parseInt(x) - 1);
 	}
 	//txt = String(resD);
 	binaryTxt = binaryArrayToStr(correctAnswer);
@@ -62,6 +69,12 @@ function update() {
 		answer = [];
 		correctAnswer = [];
 		binaryTxt = "testing";
+	}
+	// increase level
+	if (timeoutL <= 0) {
+		base += 1;
+		timeoutL = LvlTime;
+		questionTime = Math.min(questionTime + lvlUpQadd, maxQTime);
 	}
 	// Gen prompt
 	if (nextQ) {
@@ -81,14 +94,17 @@ function update() {
 	color("red");
 	line(vec(0, 10), vec(timeout*100/questionTime, 10)); // timeout bar
 	text(String(floor(timeout*10/60)/10), vec(G.WIDTH/2-15, 4)); // timeout number
-
-	color("black");
-	text(b10Txt, vec(5, G.HEIGHT/4)); // question
 	color("light_black");
-	text(":", vec(15, G.HEIGHT/4));
+	text("B10: ", vec(5, G.HEIGHT/4 + 4));
+	text("Q: ", vec(5, G.HEIGHT/4 + 16));
+	text("A: ", vec(5, G.HEIGHT/2 + 14));
 	color("black");
-	text(binaryTxt, vec(G.WIDTH/4, G.HEIGHT/4));
-	text(binaryArrayToStr(answer), vec(G.WIDTH/4, G.HEIGHT/2 + 10)); // input so far
+	text(b10Txt, vec(G.WIDTH/4 + 4, G.HEIGHT/4 + 4)); // question
+	text(binaryTxt, vec(G.WIDTH/4, G.HEIGHT/4 + 16));
+	text(binaryArrayToStr(answer), vec(G.WIDTH/4, G.HEIGHT/2 + 14)); // input so far
+	color("yellow")
+	line(vec(0, 22), vec(timeoutL*100/LvlTime, 22)); // level bar
+	text("Base: " + String(base), vec(G.WIDTH/2-20, 16)); // level number
 
 	color("red");
 	line(vec(0, G.HEIGHT*3/4), vec(G.WIDTH, G.HEIGHT*3/4)); // separator line for cancel area
@@ -100,15 +116,20 @@ function update() {
 			bar(input.pos.x, input.pos.y, 14, 3, Math.PI/4);
 			bar(input.pos.x, input.pos.y, 14, 3, -Math.PI/4);
 		} else {
-			if (held > holdTime) {
+			if (held > holdTime)
+			{
+				digit = Math.min(digit + 1, base-1)
+				held = 0;
+			}
+			if (digit % 2 == 1) {
 				color("yellow");
 				//box(vec(input.pos), 10);
 				//arc(input.pos.x, input.pos.y, 6, 3);
-				bar(input.pos.x, input.pos.y, 10, 3, Math.PI/2);
+				text(String(digit), vec(input.pos.x-4, input.pos.y-4), {scale: {x:2, y:2}});
 			} else {
 				color("cyan");
 				//box(vec(input.pos), 10);
-				arc(input.pos.x, input.pos.y, 6, 3);
+				text(String(digit), vec(input.pos.x-4, input.pos.y-4), {scale: {x:2, y:2}});
 			}
 		}
 	}
@@ -128,19 +149,14 @@ function update() {
 		if(input.pos.y > G.HEIGHT*3/4) { // cancel input
 			console.log("canceled");
 			play("coin");
-			answer = [];
-		} else {
-			if (held > holdTime) { //held
-				console.log("held");
-				console.log(held);
-				play("laser");
-				answer.push(1);
-			} else { //tapped
-				play("select");
-				console.log("tapped");
-				console.log(held);
-				answer.push(0);
-			}
+			answer.pop();
+		} 
+		else {
+			play("select");
+			console.log("Inputed");
+			console.log(digit);
+			answer.push(digit);
+			digit = 0;
 		}
 		console.log(answer);
 	}
@@ -172,4 +188,5 @@ function update() {
 	} else {
 		timeout -= 1;
 	}
+	timeoutL -= 1;
 }
